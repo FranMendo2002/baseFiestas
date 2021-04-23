@@ -1,0 +1,372 @@
+/* Consultas */
+
+/* 1 Listar por fiesta la cantidad de invitaciones de cada forma
+que se uso para invitarlos*/
+
+select idfiesta, medio, count(*) Cantidad
+from invitado
+group by idfiesta, medio;
+
++----------+----------------------------------+----------+
+| idfiesta | medio                            | Cantidad |
++----------+----------------------------------+----------+
+|        1 | e-mail                           |        3 |
+|        1 | llamada telefonica               |        2 |
+|        1 | tarjeta de invitacion por correo |        2 |
+|        1 | visita personal                  |        2 |
+|        2 | e-mail                           |        3 |
+|        2 | llamada telefonica               |        2 |
+|        2 | tarjeta de invitacion por correo |        2 |
+|        2 | visita personal                  |        3 |
+|        3 | e-mail                           |        2 |
+|        3 | llamada telefonica               |        2 |
+|        3 | tarjeta de invitacion por correo |        2 |
+|        3 | visita personal                  |        2 |
+|        4 | e-mail                           |        3 |
+|        4 | llamada telefonica               |        2 |
+|        4 | tarjeta de invitacion por correo |        1 |
+|        4 | visita personal                  |        3 |
+|        5 | e-mail                           |        3 |
+|        5 | llamada telefonica               |        2 |
+|        5 | tarjeta de invitacion por correo |        2 |
+|        5 | visita personal                  |        2 |
++----------+----------------------------------+----------+
+
+
+
+
+/* 2 Mostrar fecha, motivo de la fiesta de aquella que tuvo la menor
+cantidad de excusados*/
+
+
+select fecha, motivo
+from fiesta f
+where idfiesta in(select idfiesta
+				  from invitado i, noasistido na
+				  where i.idinvitado=na.idinvitado
+				  group by idfiesta 
+				  having count(*)=(select min(ausentes)
+								   from(select idfiesta, count(idAusente) as ausentes
+										from noasistido na, invitado i
+										where na.idinvitado=i.idinvitado
+										group by idfiesta) as tabla1));
+										
++------------+-------------------------------+
+| fecha      | motivo                        |
++------------+-------------------------------+
+| 2019-10-09 | Graduacion de Mariela y Mateo |
++------------+-------------------------------+
+
+
+/*3) Mostrar los datos de los salones que no incluyen servicios extras*/
+select idSalon
+from ServicioSalon;
+
+select distinct Nombre, Direccion, PrecioHora, Capacidad
+from Salon S, ServicioSalon SS
+where S.idSalon not in(select idSalon
+                       from ServicioSalon);
+					   
++---------------+-------------+------------+-----------+
+| Nombre        | Direccion   | PrecioHora | Capacidad |
++---------------+-------------+------------+-----------+
+| Divertilandia | Cuenca 5400 |       2000 |        15 |
++---------------+-------------+------------+-----------+
+
+/* 4 Mencionar los artistas que tienen como precio del show un valor
+que no supera el promedio de costos totales de todos los show que
+puede ofrecer la empresa organizadora de fiestas*/
+
+select nombreArtistico, especialidad
+from artista
+where precio<=(select avg(precio)
+			   from artista);
+
++------------------------+------------------+
+| nombreArtistico        | especialidad     |
++------------------------+------------------+
+| Dalaur                 | Mago             |
+| Umpa                   | Humorista        |
+| Firestorm              | Fire dancer      |
+| Entrenador de animales | Show de animales |
++------------------------+------------------+
+
+/* 5 Dar los valores finales de cada fiesta (salon+comida) organizada,
+por fecha del evento*/
+
+select tabla1.idfiesta, sum(gastoF+costoHoras) "Costo total"
+from (select idfiesta, sum(cantidad*precioUnidad) gastoF
+	from gastos g, producto p
+	where p.idproducto=g.idproducto
+	group by idfiesta) as tabla1,
+	
+	(select idfiesta, horas*preciohora CostoHoras
+	from fiesta f, salon s
+	where f.idsalon=s.idsalon
+	group by idfiesta) as tabla2
+where tabla1.idfiesta=tabla2.idfiesta
+group by tabla1.idfiesta;
+
+
++----------+-------------+
+| idfiesta | Costo total |
++----------+-------------+
+|        1 |       18200 |
+|        2 |       12560 |
+|        3 |       11460 |
+|        4 |       13300 |
+|        5 |        9450 |
++----------+-------------+
+
+/*6) Mostrar los festejados de las fiestas que tuvieron asistencia
+perfecta de invitados*/
+set @FiestaPerfecta=(select idFiesta
+                     from Fiesta
+                     where idFiesta not in(select idFiesta
+                                           from Invitado
+                                           where asistido=false));
+select @FiestaPerfecta;
+
+select Nombre, Apellido
+from Persona P, Festejado F
+where F.Festejado=P.idPersona
+and F.idFiesta=@FiestaPerfecta;
+
++---------+----------+
+| Nombre  | Apellido |
++---------+----------+
+| Esteban | Perez    |
++---------+----------+
+
+
+/* 7) Listar nombre, apellido, email y fiesta de los invitados que
+fueron notificados 7 dias antes de la fecha de la fiesta*/
+
+select nombre, apellido, email, F.idFiesta
+from persona p, invitado i, fiesta f
+where p.idpersona=i.idpersona
+and i.idfiesta=f.idFiesta
+and f.fecha-i.fecha>7;
+
++-----------+----------+-------------------------+----------+
+| nombre    | apellido | email                   | idFiesta |
++-----------+----------+-------------------------+----------+
+| Joel      | Martinez | rocajoel23@gmail.com    |        4 |
+| Mara      | Alvarez  | maraalvarez@hotmail.com |        4 |
+| Alex      | Gimenez  | gimenezalex@gmail.com   |        4 |
+| Candela   | Lopez    | candelopez25@gmail.com  |        4 |
+| Gonzalo   | Nuñez    | gonza14_01@gmail.com    |        4 |
+| Abril     | Castro   | castroabr469@gmail.com  |        4 |
+| Paula     | Ibañez   | pauiba87@gmail.com      |        4 |
+| Erica     | Soler    | ericaler4877@gmail.com  |        4 |
+| Guadalupe | Cirio    | guadacirio90@hotmail    |        4 |
++-----------+----------+-------------------------+----------+
+
+/* 8) Resolver esta situacion logica:
+Dos amigas deciden festejar la graduacion de la Universidad,
+ellas son Claudia Laprida, DNI 30456111, y Lorena Garro, DNI
+31000203. Claudia es la organizadora del evento. Contrata el
+salon hasta la fecha fue el mas caro y el espectaculo de menor
+costo sin animales. La consumicion que contrata para sus 45 invitados
+es picada con cerveza. Para obtener un descuento del 10$ pagan el
+momento todo el arancel de la fiesta (debe mostrar el monto a pagar)*/
+
+set @Persona=(select count(*)
+              from Persona
+			  where nombre="Claudia"
+			  and apellido="Laprida");
+select @Persona;
+
+set @Persona2=(select count(*)
+               from Persona
+			   where nombre="Lorena"
+			   and apellido="Garro");
+select @Persona2;
+
+set @MaxPersona=(select max(idPersona)+1
+                 from Persona);
+select @MaxPersona;
+
+insert into Persona values
+(@MaxPersona, "Claudia", "Laprida", null, "DNI", 30456111, null);
+
+set @MaxPersona=(select max(idPersona)+1
+                 from Persona);
+select @MaxPersona;
+
+insert into Persona values
+(@MaxPersona, "Lorena", "Garro", null, "DNI", 31000203, null);
+
+set @Salon=(select idSalon
+            from Salon
+			where PrecioHora=(select max(PrecioHora)
+			                  from Salon));
+select @Salon;
+
+set @Artista=(select idArtista
+              from(select idArtista
+			       from Artista
+				   where precio=(select min(precio)
+			                     from Artista
+				                 where animales=false)) F);
+select @Artista;
+
+set @MaxProducto=(select max(idProducto)+1
+                  from Producto);
+select @MaxProducto;
+
+insert into Producto values
+(@MaxProducto, "Picada", 100);
+
+set @MaxProducto=(select max(idProducto)+1
+                  from Producto);
+select @MaxProducto;
+
+insert into Producto values
+(@MaxProducto, "Cerveza", 120);
+
+set @Organizador=(select idPersona
+                  from Persona
+				  where Nombre="Claudia"
+				  and Apellido="Laprida");
+select @Organizador;
+
+set @MaxFiesta=(select max(idFiesta)+1
+             from Fiesta);
+select @MaxFiesta;
+
+insert into Fiesta values
+(@MaxFiesta, "Graduacion de Claudia y Lorena", null, @Organizador, 11880, 3, 308);
+
+set @Fiesta=(select max(idFiesta)
+             from Fiesta);
+select @Fiesta;
+
+set @Producto=(select idProducto
+               from Producto
+               where Producto="Picada");
+select @Producto;
+
+set @Producto2=(select idProducto
+                from Producto
+				where Producto="Cerveza");
+select @Producto2;
+
+set @MaxGasto=(select max(idGasto)+1
+               from Gastos);
+select @MaxGasto;
+
+insert into Gastos values
+(@MaxGasto, @Fiesta, @Producto, 45);
+
+set @MaxGasto=(select max(idGasto)+1
+               from Gastos);
+select @MaxGasto;
+
+insert into Gastos values
+(@MaxGasto, @Fiesta, @Producto2, 45);
+
+set @MaxFA=(select max(idFiestaArt)+1
+            from FiestaArt);
+select @MaxFA;
+
+insert into FiestaArt values
+(@MaxFA, @Fiesta, @Artista, null, 1);
+
+insert into Invitado values
+(6045, @Fiesta, 5000, "visita Personal", null, 1),
+("", @Fiesta, 5001, "visita Personal", null, 1),
+("", @Fiesta, 5002, "visita Personal", null, 1),
+("", @Fiesta, 5003, "visita Personal", null, 1),
+("", @Fiesta, 5004, "visita Personal", null, 1),
+("", @Fiesta, 5005, "tarjeta de invitacion por correo", null, 1),
+("", @Fiesta, 5006, "tarjeta de invitacion por correo", null, 1),
+("", @Fiesta, 5007, "tarjeta de invitacion por correo", null, 1),
+("", @Fiesta, 5008, "tarjeta de invitacion por correo", null, 1),
+("", @Fiesta, 5009, "tarjeta de invitacion por correo", null, 1),
+("", @Fiesta, 5010, "tarjeta de invitacion por correo", null, 1),
+("", @Fiesta, 5011, "tarjeta de invitacion por correo", null, 1),
+("", @Fiesta, 5012, "tarjeta de invitacion por correo", null, 1),
+("", @Fiesta, 5013, "tarjeta de invitacion por correo", null, 1),
+("", @Fiesta, 5014, "tarjeta de invitacion por correo", null, 1),
+("", @Fiesta, 5015, "tarjeta de invitacion por correo", null, 1),
+("", @Fiesta, 5016, "tarjeta de invitacion por correo", null, 1),
+("", @Fiesta, 5017, "tarjeta de invitacion por correo", null, 1),
+("", @Fiesta, 5018, "tarjeta de invitacion por correo", null, 1),
+("", @Fiesta, 5019, "tarjeta de invitacion por correo", null, 1),
+("", @Fiesta, 5020, "e-mail", null, 1),
+("", @Fiesta, 5021, "e-mail", null, 1),
+("", @Fiesta, 5022, "e-mail", null, 1),
+
+("", @Fiesta, 5023, "e-mail", null, 0),
+("", @Fiesta, 5024, "e-mail", null, 0),
+("", @Fiesta, 5025, "e-mail", null, 0),
+("", @Fiesta, 5026, "e-mail", null, 0),
+("", @Fiesta, 5027, "e-mail", null, 0),
+("", @Fiesta, 5028, "e-mail", null, 0),
+("", @Fiesta, 5029, "e-mail", null, 0),
+("", @Fiesta, 5030, "e-mail", null, 0),
+("", @Fiesta, 5031, "llamada telefonica", null, 0),
+("", @Fiesta, 5032, "llamada telefonica", null, 0),
+("", @Fiesta, 5033, "llamada telefonica", null, 0),
+("", @Fiesta, 5034, "llamada telefonica", null, 0),
+("", @Fiesta, 5035, "llamada telefonica", null, 0),
+("", @Fiesta, 5036, "llamada telefonica", null, 0),
+("", @Fiesta, 5037, "llamada telefonica", null, 0),
+("", @Fiesta, 5038, "llamada telefonica", null, 0),
+("", @Fiesta, 5039, "llamada telefonica", null, 0),
+("", @Fiesta, 5040, "llamada telefonica", null, 0),
+("", @Fiesta, 5041, "visita Personal", null, 0),
+("", @Fiesta, 5042, "visita Personal", null, 0),
+("", @Fiesta, 5043, "visita Personal", null, 0),
+("", @Fiesta, 5044, "visita Personal", null, 0);
+
+insert into Asistido values
+("", 6045, "Billetera"),
+("", 6046, "Tacones"),
+("", 6047, "Remera"),
+("", 6048, "Camisa"),
+("", 6049, "Cartera"),
+("", 6050, "Monedero"),
+("", 6051, "Zapatillas"),
+("", 6052, "Juego de cuchillos"),
+("", 6053, "Juego de tenedores"),
+("", 6054, "Gorra"),
+("", 6055, "Celular"),
+("", 6056, "Auriculares"),
+("", 6057, "Llavero"),
+("", 6058, "Jean"),
+("", 6059, "Short"),
+("", 6060, "Ventilador de piso"),
+("", 6061, "Cafetera"),
+("", 6062, "Tostadora"),
+("", 6063, "Sarten"),
+("", 6064, "Remera"),
+("", 6065, "Zapatillas"),
+("", 6066, "Equipo de maquillaje"),
+("", 6067, "Notebook");
+
+insert into NoAsistido values
+("", 6068, "Enfermedad"),
+("", 6068, "Enfermedad"),
+("", 6068, "Enfermedad"),
+("", 6068, "Enfermedad"),
+("", 6068, "Enfermedad"),
+("", 6068, "Enfermedad"),
+("", 6068, "Viaje"),
+("", 6068, "Viaje"),
+("", 6068, "Viaje"),
+("", 6068, "Viaje"),
+("", 6068, "Viaje"),
+("", 6068, "Viaje"),
+("", 6068, "Estudio"),
+("", 6068, "Estudio"),
+("", 6068, "Estudio"),
+("", 6068, "Estudio"),
+("", 6068, "Estudio"),
+("", 6068, "Estudio"),
+("", 6068, "Otra fiesta"),
+("", 6068, "Otra fiesta"),
+("", 6068, "Otra fiesta"),
+("", 6068, "Otra fiesta");
+

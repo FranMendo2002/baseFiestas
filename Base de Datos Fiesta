@@ -1,0 +1,511 @@
+drop database if exists Fiestas;
+create database Fiestas;
+use Fiestas;
+
+create table Persona(
+idPersona int auto_increment,
+nombre char(40),
+apellido char(40),
+Email char(50),
+tipoDoc char(30),
+NDoc int,
+Direccion char(30),
+constraint pk_persona primary key(idPersona)
+)engine=innoDB;
+
+create table Salon(
+idSalon int auto_increment,
+Nombre char(30),
+Direccion char(30),
+PrecioHora int,
+Capacidad int,
+constraint pk_salon primary key(idSalon)
+)engine=innoDB;
+
+create table Servicio(
+idServicio int auto_increment,
+Servicio char(30),
+constraint pk_servicio primary key(idServicio)
+)engine=innoDB;
+
+create table ServicioSalon(
+idServSalon int auto_increment,
+idSalon int,
+idServicio int,
+constraint pk_servSalon primary key(idServSalon),
+constraint fk_SalonServ foreign key(idSalon) references Salon(idSalon),
+constraint fk_ServicioServ foreign key(idServicio) references Servicio(idServicio)
+)engine=innoDB;
+
+create table Fiesta(
+idFiesta int auto_increment,
+motivo char(30),
+fecha date,
+organizador int,
+importe int,
+horas int,
+idSalon int,
+constraint pk_fiesta primary key(idFiesta),
+constraint fk_fiestaOrg foreign key(organizador) references persona(idPersona),
+constraint fk_fiestaSalon foreign key(idSalon) references salon(idSalon)
+)engine=innoDB;
+
+create table Festejado( 
+idFestejado int auto_increment,
+idFiesta int,
+Festejado int,
+constraint pk_festejado primary key(idFestejado),
+constraint fk_fiestaFestejado foreign key(idFiesta) references Fiesta(idFiesta),
+constraint fk_festejadoPersona foreign key(Festejado) references Persona(idPersona)
+)engine=innoDB;
+
+create table Invitado(
+idInvitado int auto_increment,
+idFiesta int,
+idPersona int,
+medio char(40),
+fecha date,
+asistido boolean,
+constraint pk_invitado primary key(idInvitado),
+constraint fk_fiestaInvitado foreign key(idFiesta) references Fiesta(idFiesta),
+constraint fk_personaInvitado foreign key(idPersona) references Persona(idPersona)
+)engine=innoDB;
+
+create table Asistido(
+idAsistido int auto_increment,
+idInvitado int,
+regalo char(40),
+constraint pk_asistido primary key(idAsistido),
+constraint fk_invitadoAsistido foreign key(idInvitado) references Invitado(idInvitado)
+)engine=innoDB;
+
+create table NoAsistido(
+idAusente int auto_increment,
+idInvitado int,
+excusa char(40),
+constraint pk_ausente primary key(idAusente),
+constraint fk_invitadoAusente foreign key(idInvitado) references Invitado(idInvitado)
+)engine=innoDB;
+
+create table Artista(
+idArtista int auto_increment,
+nombreArtistico char(40),
+especialidad char(30),
+email char(40),
+precio int,
+duracionMinutos int,
+cantPer int,
+Animales boolean,
+constraint pk_artista primary key(idArtista)
+)engine=innoDB;
+
+create table FiestaArt(
+idFiestaArt int auto_increment,
+idFiesta int,
+idArtista int,
+hora time,
+numOrden int,
+constraint pk_fiestaArt primary key(idFiestaArt),
+constraint fk_fArtFiesta foreign key(idFiesta) references Fiesta(idFiesta),
+constraint fk_fArtArtista foreign key(idArtista) references Artista(idArtista)
+)engine=innoDB;
+
+create table Producto(
+idProducto int auto_increment,
+Producto char(30),
+precioUnidad int,
+constraint pk_producto primary key(idProducto)
+)engine=innoDB;
+
+create table Gastos(
+idGasto int auto_increment,
+idFiesta int,
+idProducto int,
+cantidad int,
+constraint pk_gasto primary key(idGasto),
+constraint fk_gastoFiesta foreign key(idFiesta) references Fiesta(idFiesta),
+constraint fk_gastoProducto foreign key(idProducto) references Producto(idProducto)
+)engine=innoDB;
+
+create table fiestaservicio(
+idFiesta int,
+idServSalon int,
+constraint pk_fiestaserv primary key(idFiesta, idServSalon),
+constraint fk_fiestafs foreign key(idFiesta) references Fiesta(idFiesta),
+constraint fk_fiestass foreign key(idServSalon) references serviciosalon(idServSalon)
+)engine=innoDB;
+
+insert into artista values
+(1000, 'Dalaur', 'Mago', 'dalaureventos@gmail.com', 300, 45, 3, 1),
+("", 'Umpa', 'Humorista', 'umpafiestas@hotmail.com', 200, 25, 1, 0),
+("", 'Deus', 'Guitarrista', 'deuseventos@yahoo.com.ar', 350, 40, 1, 0),
+("", 'Flamengo', 'Bailarines', 'bailaflamengo@gmail.com', 400, 60, 8, 0),
+("", 'Firestorm', 'Fire dancer', 'firestormfiestas@hotmail.com', 250, 25, 2, 0),
+("", 'Storm in the house', 'Banda', 'stormithbanda@gmail.com', 500, 60, 4, 0),
+("", 'Entrenador de animales', 'Show de animales', 'entrenanimales@yahoo.com', 250, 20, 2, 1),
+("", "The Singer", "Cantante", "singermusic@gmail.com", 450, 30, 1, 0),
+("", "Roleco", "Animacion para adultos", "rolecoentretenimento@gmail.com", 550, 60, 2, 0);
+
+insert into servicio values
+(900, 'DJ'),
+("", 'Catering'),
+("", 'Mozo'),
+("", 'Chef'),
+("", 'Pelotero'),
+("", 'Cancha de futbol'),
+("", 'Consola de juegos'),
+("", 'Animador'),
+("", 'Disfraces'),
+("", 'Obra de teatro'),
+("", 'Luces RGB'),
+("", 'Bola disco'),
+("", 'Set de parlantes x3'),
+("", 'Luces ultravioleta'),
+("", 'Pileta'),
+("", 'Patio de juegos'),
+("", 'Kartings');
+
+insert into salon values
+(300, 'Los cerezos', 'Av. Alvarez Jonte 2158', 1000, 20),
+("", 'Fiestalandia', 'Av. San Martin 4256', 1250, 25),
+("", 'La casa de Iliana', 'Caracas 1457', 900, 15),
+("", 'Noche de sueños', 'Av. Gaona 4782', 1200, 20),
+("", 'Fantasy', 'Av. Lope de Vega 6547', 950, 15),
+("", 'Camelot', 'Terrada 4519', 1500, 40),
+("", 'Acuarela', 'Av. Juan B. Justo 3548', 1200, 15),
+("", 'Magic World', 'Helguera 2688', 1000, 10),
+("", 'La casita de Emanuel', 'Helguera 2688', 1000, 50),
+("", "Divertilandia", "Cuenca 5400", 2000, 15);
+
+insert into persona values
+(5000, 'Mateo', 'Alvaro', 'alvaromateo@hotmail.com', 'DNI', 23450110, 'Av. Alvear 2185'),
+("", 'Daniel', 'Samuel', 'danisamuel@gmail.com', 'DNI', 44548235, 'Caracas 2387'),
+("", 'Adrian', 'Gonzalez', 'ad_gonzalez@gmail.com', 'DNI', 35145875, 'Av. San Martin 3574'),
+("", 'Carolina', 'Sosa', 'carososa@gmail.com', 'DNI', 40452117, 'Av. Alvarez Jonte 3589'),
+("", 'Javier', 'Larusso', 'javierlarusso@gmail.com', 'DNI', 31563498, 'Cesar Diaz 4053'),
+("", 'Micaela', 'Fernandez', 'micaelafer@hotmail.com', 'DNI', 40217896, 'Alfredo R. Bufano 1268'),
+("", 'Jacob', 'Valle', 'jvalle@gmail.com', 'DNI', 29457256, 'Magariños Cervantes'),
+("", 'Facundo', 'de la Fuente', 'facudlf@hotmail.com', 'DNI', 25678459, 'Andres Lamas 4526'),
+("", 'Agustina', 'Vicario', 'agusvic15@gmail.com', 'DNI', 45875921, 'Boyaca 1257'),
+("", 'Marcela', 'Gutierrez', 'gutierrezmarce1980@hotmail.com', 'DNI', 29478563, 'Camarones 1406'),
+("", 'Esteban', 'Perez', 'perezban14@hotmail.com', 'DNI', 44368157, 'Helguera 2459'),
+("", 'Leonardo', 'Mendez', 'leomendez1998@gmail.com', 'DNI', 42156893, 'Av. Lope de Vega 1852'),
+("", 'Gustavo', 'Campos', 'guscmp@yahoo.com.ar', 'DNI', 40126845, 'Av. Juan B. Justo 4875'),
+("", 'Ezequiel', 'Gomez', 'gomezeze48@gmail.com', 'DNI', 38659542, 'Av. Gaona 2358'),
+("", 'Mariela', 'Montes', 'marmontes15@gmail.com', 'DNI', 25254879, 'Cesar Diaz 4189'),
+("", "Juan", "Seco", "secojuan@gmail.com", "DNI", 44906753, "Av.Lope de Vega 4521"),
+("", "Franco", "Tesgo", "frantesgo@hotmail.com", "DNI", 44082169, "Cuenca 1458"),
+("", "Matias", "Lire", "matilire98@gmial.com", "DNI", 43901308, "Campana 3051"),
+("", "Fabio", "Gonzalez", "gonzalito2002@gmail.com", "DNI", 45892471,"Baigorria 3098"),
+("", "Patricio", "Estebanez", "patoesteban@gmail.com", "DNI", 44714943, "Argerich 5096"),
+("", "Fabian", "Luro", "fabianluro@hotmail.com", "DNI", 44892401, "Cuzco 3672"),
+("", "Silvana", "Gago", "gaguitasil@gmail.com", "DNI", 43983295, "Ejercito de los Andes 1934"),
+("", "Idilia", "Fernandez", "fernandezidilia@hotmail.com", "DNI", 43123456, "Av.Corrientes"),
+("", "Francisco", "Roda", "ciscoroda@gmail.com", "DNI", 40268159, "Av. Alvarez Jonte 3589"),
+("", "Julieta", "Flores", "juliflores@gmail.com", "DNI", 44402135, "Helguera 2459"),
+("", "Jose", "Amaltorosi", "joseamal@hotmail.com", "DNI", 45450981, "Moliere 4985"),
+("", "Nahuel", "Desa", "desanahuel99@gmail.com", "DNI", 43672104, "Madero 5392"),
+("", "Lautaro", "Uria", "lautiuria95@hotmail.com", "DNI", 44209752, "Estero Bellaco 2387"),
+("", "Veronica", "Blanco", "veroblanco1998@gmail.com", "DNI", 43185436, "Moliere 4985"),
+("", "Tomas", "Guemez", "guemeztomas@gmail.com", "DIN", 445786132, "Almte.Brown  3290"),
+("", "Alberto", "Lorenzo", "alorenzo1458@gmail.com", "DNI", 25472365, 'Av. Rivadavia 1247'),
+("", "Joel", "Martinez", "rocajoel23@gmail.com", "DNI", 42658441, 'Arregui 1436'),
+("", "Mara", "Alvarez", "maraalvarez@hotmail.com", "DNI", 23457645, 'Lascano 2147'),
+("", "Alex", "Gimenez", "gimenezalex@gmail.com", "DNI", 32457246, 'Alcaraz 5478'),
+("", "Candela", "Lopez", "candelopez25@gmail.com", "DNI", 44578965, 'Baigorria 5578'),
+("", "Gonzalo", "Nuñez", "gonza14_01@gmail.com", "DNI", 32546157, 'Gavilan 2337'),
+("", "Hector", "Ruiz", "hectoruiz58@yahoo.com.ar", "DNI", 41547668, 'Tres Arroyos 4573'),
+("", "Abril", "Castro", "castroabr469@gmail.com", "DNI", 43652187, 'Galicia 7844'),
+("", "Paula", "Ibañez", "pauiba87@gmail.com", "DNI", 23659877, 'Franklin 3540'),
+("", "Erica", "Soler", "ericaler4877@gmail.com", "DNI", 29578441, 'Terrada 800'),
+("", "Guadalupe", "Cirio", "guadacirio90@hotmail", "DNI", 43904356, "Juan Bautista Alberdi 5674"),
+("", "Thiago", "Salha", "salhathiago1995@gmail.com", "DNI", 44926834, "Carlos Caseres 3421"),
+("", "Lucas", "Robles", "lrobles@hotmail.com", "DNI", 44598271, "Barragan 2189"),
+("", "Marta", "Nuñez", "nuñezm1994@hotmail.com", "DNI", 42723764, "Domingo Faustino Sarmiento 4820"),
+("", "Selene", "Gulan", "selegulan@gmail.com", "DNI", 44671892, "Gaspar Campos 3217"),
+("", "Javier", "Olivos", "olivosjavi1990@hotmail.com", "DNI", 42002468, "Delgado 1000"),
+("", "Martina", "Ferro", "martinaferro@gmail.com", "DNI", 44188900, "Castro 4010"),
+("", "Alan", "Hidalgo", "hidalgoalan98@hotmail.com", "DNI", 43308209, "Santander 2865"),
+("", "Yair", "Garcia", "yairgarcia92@gmail.com", "DNI", 42900366, "Yerbal 4300"),
+("", "Fernando", "Sado", "fernaditosado@gmail.com", "DNI", 44303804, "Valentin Virasoro 4389");
+
+insert into Producto values
+(3010, "Pack x24 vasos descartables", 20),
+("", "Pack x24 platos descartables", 30),
+("", "Pack x100 servilletas", 50),
+("", "Coca-Cola 2L", 150),
+("", "Fanta 2L", 150),
+("", "Manaos Uva", 50),
+("", "Manaos", 50),
+("", "Papas Lays 250G", 175),
+("", "De Todito 300G", 200),
+("", "Docena sanguches de miga", 250),
+("", "Levite Pomelo 2,25L", 80),
+("", "Levite Naranja 2,25L", 80),
+("", "Sprite 2L", 150),
+("", "Mirinda 2L", 150),
+("", "7Up 2L", 150),
+("", "Villavicencio 2,25L", 70),
+("", "Sifon Agua Sierra de los Padres 2L", 75),
+("", "Papas Pehuamar 550G", 240),
+("", "Pack x40 hamburguesas Paty", 800),
+("", "Pan Hamburguesa x4 Artesano Bimbo", 50),
+("", "Salchichas Vienissima x12", 175),
+("", "Pan Pancho x6 Artesano Bimbo", 80),
+("", "Ketchup Hellmanns 250G", 75),
+("", "Mayonesa Hellmanns 250G", 75),
+("", "Mostaza Hellmanns 250G", 75);
+
+
+
+insert into serviciosalon values
+(700, 300, 901),
+("", 300, 902),
+("", 300, 903),
+("", 300, 904),
+("", 300, 905),
+("", 300, 906),
+("", 300, 907),
+("", 300, 916),
+("", 301, 900),
+("", 301, 907),
+("", 301, 908),
+("", 301, 910),
+("", 301, 911),
+("", 301, 912),
+("", 301, 913),
+("", 301, 915),
+("", 302, 901),
+("", 302, 904),
+("", 302, 903),
+("", 302, 907),
+("", 302, 908),
+("", 302, 909),
+("", 302, 910),
+("", 302, 911),
+("", 302, 912),
+("", 303, 900),
+("", 303, 907),
+("", 303, 909),
+("", 303, 910),
+("", 303, 911),
+("", 303, 912),
+("", 303, 913),
+("", 304, 901),
+("", 304, 903),
+("", 304, 904),
+("", 304, 907),
+("", 304, 908),
+("", 305, 901),
+("", 305, 903),
+("", 305, 904),
+("", 305, 905),
+("", 306, 900),
+("", 306, 902),
+("", 306, 903),
+("", 306, 909),
+("", 306, 910),
+("", 306, 912),
+("", 306, 913),
+("", 306, 914),
+("", 307, 901),
+("", 307, 903),
+("", 307, 904),
+("", 307, 905),
+("", 307, 906),
+("", 307, 907),
+("", 308, 907),
+("", 308, 904),
+("", 308, 905),
+("", 308, 908),
+("", 308, 909);
+
+
+
+insert into fiesta values
+(1, 'Casamiento', "2019/11/24",5031, 30000, 6, 306), 
+("", 'Cumpleaños de Hector', "2019/09/20",5007, 20000, 4, 301),
+("", 'Graduacion de Mariela y Mateo', "2019/10/09",5014, 10000, 6, 300), 
+("", "Fiesta de 15", "2019/12/20", 5003, 100000, 5, 308), 
+("", "Cumpleaños de Pablo", "2019/07/30", 5046, 50000, 2, 306);
+
+insert into fiestaservicio values
+(1, 741),
+(1, 742),
+(1, 743),
+(1, 745),
+(1, 746),
+(1, 747),
+(1, 748),
+(2, 709),
+(2, 710),
+(2, 711),
+(2, 713),
+(2, 715),
+(3, 715),
+(3, 700),
+(3, 702),
+(3, 704),
+(3, 707),
+(4, 755),
+(4, 757),
+(4, 758),
+(4, 759),
+(5, 741),
+(5, 743),
+(5, 744),
+(5, 746),
+(5, 747),
+(5, 748);
+
+insert into FiestaArt values
+(500, 1, 1003, "01:30", 1),
+("", 1, 1005, "03:00", 2),
+("", 2, 1006, "15:00", 1),
+("", 4, 1002, "02:00", 1),
+("", 4, 1007, "02:50", 2),
+("", 3, 1000, "21:00", 1),
+("", 3, 1004, "22:30", 2),
+("", 5, 1001, "15:45", 1),
+("", 5, 1008, "16:30", 2);
+
+insert into Gastos values
+(4000, 1, 3013, 25),
+("", 1, 3014, 25),
+("", 1, 3020, 10),
+("", 1, 3026, 20),
+("", 1, 3027, 5),
+("", 2, 3019, 10),
+("", 2, 3015, 5),
+("", 2, 3025, 5),
+("", 2, 3011, 2),
+("", 2, 3012, 1),
+("", 2, 3029, 2),
+("", 2, 3030, 20),
+("", 2, 3033, 5),
+("", 2, 3034, 5),
+("", 3, 3020, 12),
+("", 3, 3023, 10),
+("", 3, 3013, 10),
+("", 3, 3024, 10),
+("", 4, 3031, 15),
+("", 4, 3032, 30),
+("", 4, 3033, 5),
+("", 4, 3034, 5),
+("", 4, 3012, 2),
+("", 4, 3017, 10),
+("", 4, 3023, 10),
+("", 4, 3026, 10),
+("", 5, 3013, 10),
+("", 5, 3014, 10),
+("", 5, 3021, 10),
+("", 5, 3018, 5),
+("", 5, 3029, 1),
+("", 5, 3033, 3),
+("", 5, 3034, 3),
+("", 5, 3030, 10);
+
+insert into Festejado values
+(2800, 1, 5023),
+("", 1, 5003),
+("", 2, 5036),
+("", 3, 5014),
+("", 3, 5000),
+("", 4, 5046),
+("", 5, 5010);
+
+insert into Invitado values
+(6000, 1, 5001, "e-mail", "2019/11/19", 1),
+("", 1, 5002, "e-mail", "2019/11/19", 1), 
+("", 1, 5004, "visita personal", "2019/11/19", 0), 
+("", 1, 5005, "llamada telefonica", "2019/11/17", 1), 
+("", 1, 5006, "tarjeta de invitacion por correo", "2019/11/18", 0), 
+("", 1, 5007, "llamada telefonica", "2019/11/20", 0), 
+("", 1, 5008, "visita personal", "2019/11/17", 1), 
+("", 1, 5009, "e-mail", "2019/11/19", 1), 
+("", 1, 5011, "tarjeta de invitacion por correo", "2019/11/18", 1), 
+("", 2, 5012, "llamada telefonica", "2019/09/16", 1), 
+("", 2, 5013, "e-mail", "2019/09/15", 1), 
+("", 2, 5015, "visita personal", "2019/09/17", 1), 
+("", 2, 5016, "visita personal", "2019/09/15", 1), 
+("", 2, 5017, "tarjeta de invitacion por correo", "2019/09/16", 1), 
+("", 2, 5018, "llamada telefonica", "2019/09/17", 0),
+("", 2, 5019, "e-mail", "2019/09/15", 1), 
+("", 2, 5020, "tarjeta de invitacion por correo", "2019/09/16", 1), 
+("", 2, 5021, "visita personal", "2019/09/17", 0), 
+("", 2, 5022, "e-mail", "2019/09/15", 1),
+("", 3, 5023, "tarjeta de invitacion por correo", "2019/10/05", 1), 
+("", 3, 5024, "llamada telefonica", "2019/10/04", 1), 
+("", 3, 5025, "llamada telefonica", "2019/10/04", 1), 
+("", 3, 5026, "e-mail", "2019/10/06", 0),
+("", 3, 5027, "e-mail", "2019/10/06", 1),
+("", 3, 5028, "visita personal", "2019/10/04", 1),
+("", 3, 5029, "tarjeta de invitacion por correo", "2019/10/05", 1),
+("", 3, 5030, "visita personal", "2019/10/05", 1),
+("", 4, 5031, "e-mail", "2019/12/10", 0),
+("", 4, 5032, "visita personal", "2019/12/11", 1),
+("", 4, 5033, "e-mail", "2019/12/10", 0),
+("", 4, 5034, "llamada telefonica", "2019/12/12", 1),
+("", 4, 5035, "tarjeta de invitacion por correo", "2019/12/10", 1),
+("", 4, 5037, "e-mail", "2019/12/10", 1),
+("", 4, 5038, "llamada telefonica", "2019/12/11", 1),
+("", 4, 5039, "visita personal", "2019/12/12", 1),
+("", 4, 5040, "visita personal", "2019/12/10", 0),
+("", 5, 5041, "visita personal", "2019/07/25", 1),
+("", 5, 5042, "visita personal", "2019/07/25", 1),
+("", 5, 5043, "llamada telefonica", "2019/07/26", 1),
+("", 5, 5044, "e-mail", "2019/07/24", 1),
+("", 5, 5045, "tarjeta de invitacion por correo", "2019/07/27", 1),
+("", 5, 5046, "e-mail", "2019/07/24", 1),
+("", 5, 5047, "tarjeta de invitacion por correo", "2019/07/27", 1),
+("", 5, 5048, "llamada telefonica", "2019/07/25", 1),
+("", 5, 5049, "e-mail", "2019/07/24", 1);
+
+
+insert into NoAsistido values
+(1300, 6002, "Enfermedad"),
+("", 6004, "Estudio"),
+("", 6005, "Otra fiesta"),
+("", 6014, "Viaje"),
+("", 6017, "Enfermedad"),
+("", 6022, "Otra fiesta"),
+("", 6027, "Estudio"),
+("", 6029, "Estudio"),
+("", 6035, "Viaje");
+
+insert into Asistido values
+("", 6000, "Licuadora"),
+("", 6001, "Sarten"),
+("", 6003, "Juego de cuchillos"),
+("", 6006, "Pava Electrica"),
+("", 6007, "Adornos de mesa"),
+("", 6008, "Televisor"),
+("", 6009, "Juego de Play"),
+("", 6010, "Remera y Short"),
+("", 6011, "Camisa"),
+("", 6012, "Jean"),
+("", 6013, "Zapatillas"),
+("", 6015, "Campera"),
+("", 6016, "Llavero"),
+("", 6018, "Bicicleta"),
+("", 6019, "Billetera"),
+("", 6020, "Vestido"),
+("", 6021, "Libro"),
+("", 6023, "Cartera"),
+("", 6024, "Zapatos"),
+("", 6025, "Chaleco"),
+("", 6026, "Vestido"),
+("", 6028, "Tacones"),
+("", 6030, "Celular"),
+("", 6031, "Equipo de maquillaje"),
+("", 6032, "Cartera"),
+("", 6033, "Vestido"),
+("", 6034, "Notebook"),
+("", 6035, "Camisa"),
+("", 6036, "Cafetera"),
+("", 6037, "Campera"),
+("", 6038, "Equipo de ejercicio"),
+("", 6039, "Afeitadora"),
+("", 6040, "Zapatillas"),
+("", 6041, "Jean"),
+("", 6042, "Buzo");
